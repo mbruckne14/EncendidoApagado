@@ -1,0 +1,49 @@
+﻿<div class="card">
+    <h1 class="card-header">Recursos</h1>
+    <div class="card-body">
+    
+        <form class="example-form" style="max-width: 400px;">
+            <mat-form-field class="example-full-width">
+                <mat-label>Tag Name</mat-label>
+                <input matInput type="text" [(ngModel)]="tagName" name="tagName" placeholder="Dejar vacío para todos los recursos">
+                <button mat-button *ngIf="tagName" matSuffix mat-icon-button aria-label="Clear" (click)="tagName=''">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </mat-form-field>
+
+            <mat-form-field class="example-full-width">
+                <mat-label>Tag Value</mat-label>
+                <input matInput type="text" [(ngModel)]="tagValue" name="tagValue" placeholder="Dejar vacío para todos los recursos"> 
+                <button mat-button *ngIf="tagValue" matSuffix mat-icon-button aria-label="Clear" (click)="tagValue=''">
+                    <mat-icon>close</mat-icon>
+                </button>
+            </mat-form-field>
+            <button [disabled]="loading" style="margin:5px;width: 190px;" class="btn btn-md btn-success mb-2"
+                (click)="openDialog($event)" id="encender">
+                <span *ngIf="loadingEncender" class="spinner-border spinner-border-sm mr-1"></span>
+                Encender Recursos</button>
+            <button [disabled]="loading" style="margin:5px;width: 190px;" class="btn btn-md btn-danger mb-2"
+                (click)="openDialog($event)" id="apagar">
+                <span *ngIf="loadingApagar" class="spinner-border spinner-border-sm mr-1"></span>
+                Apagar Recursos</button>
+        </form>
+    </div>
+
+    <!-- <table class="table table-striped">
+    <thead>
+        <tr>
+            <th style="width: 30%">Username</th>
+            <th style="width: 10%"></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let user of users">
+            <td>{{user.username}}</td>
+        </tr>
+        <tr *ngIf="!users">
+            <td colspan="4" class="text-center">
+                <span class="spinner-border spinner-border-lg align-center"></span>
+            </td>
+        </tr>
+    </tbody>
+</table> -->

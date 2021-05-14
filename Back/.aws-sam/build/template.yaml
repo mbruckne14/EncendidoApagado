@@ -1,0 +1,531 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'backend-InfraOn Template for backend-InfraOn
+
+  '
+Globals:
+  Function:
+    Timeout: 30
+Resources:
+  ServiceApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: ServiceApi
+      StageName: dev
+      Cors:
+        AllowMethods: '''*'''
+        AllowHeaders: '''*'''
+        AllowOrigin: '''*'''
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            UserPoolArn:
+              Ref: UserPoolArn
+  SNSMessengerTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+      - Endpoint: mbruckne@gmail.com
+        Protocol: email
+  LoginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: LoginFunction
+      Handler: app.lambdaHandler
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          USERPOOLID:
+            Ref: UserPool
+          CLIENT_ID:
+            Ref: UserPoolTokenClient
+          MESSENGERFUNCTION:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+          EMPRESA:
+            Ref: Empresa
+      Events:
+        InfraOnOff:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ServiceApi
+            Path: /login
+            Method: post
+      Policies:
+      - Statement:
+        - Sid: LambdaMessengerAsyncInvoke
+          Effect: Allow
+          Action:
+          - lambda:InvokeFunction
+          - lambda:InvokeAsync
+          Resource:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+  ChangePasswordFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ChangePasswordFunction
+      Handler: app.changeHandler
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          USERPOOLID:
+            Ref: UserPool
+          CLIENT_ID:
+            Ref: UserPoolTokenClient
+          MESSENGERFUNCTION:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+      Events:
+        InfraOnOff:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ServiceApi
+            Path: /changepassword
+            Method: post
+      Policies:
+      - Statement:
+        - Sid: LambdaMessengerAsyncInvoke
+          Effect: Allow
+          Action:
+          - lambda:InvokeFunction
+          - lambda:InvokeAsync
+          Resource:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+  StartFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: StartFunction
+      Handler: app.startHandler
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          MESSENGERFUNCTION:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+      Events:
+        InfraOnOff:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ServiceApi
+            Path: /start
+            Method: get
+            Auth:
+              Authorizer: CognitoAuthorizer
+        InfraOnOffTags:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ServiceApi
+            Path: /start
+            Method: post
+            Auth:
+              Authorizer: CognitoAuthorizer
+      Policies:
+      - Statement:
+        - Sid: EC2StartStop
+          Effect: Allow
+          Action:
+          - ec2:StartInstances
+          Resource: arn:aws:ec2:*:*:instance/*
+        - Sid: EC2Describe
+          Effect: Allow
+          Action:
+          - ec2:DescribeInstances
+          Resource: '*'
+        - Sid: RDSStartStop
+          Effect: Allow
+          Action:
+          - rds:StartDBInstance
+          Resource: arn:aws:rds:*:*:db:*
+        - Sid: RDSDescribe
+          Effect: Allow
+          Action:
+          - rds:DescribeDBInstances
+          Resource: '*'
+        - Sid: AppStreamStartStop
+          Effect: Allow
+          Action:
+          - appstream:StartFleet
+          - appstream:DescribeFleets
+          Resource: arn:aws:appstream:*:*:fleet/*
+        - Sid: AppstreamListTags
+          Effect: Allow
+          Action:
+          - appstream:ListTagsForResource
+          Resource: '*'
+        - Sid: AutoScalingUpdate
+          Effect: Allow
+          Action:
+          - autoscaling:UpdateAutoScalingGroup
+          Resource: arn:aws:autoscaling:*:*:autoScalingGroup:*:autoScalingGroupName/*
+        - Sid: AutoScalingDescribe
+          Effect: Allow
+          Action:
+          - autoscaling:DescribeAutoScalingGroups
+          - autoscaling:DescribeTags
+          Resource: '*'
+        - Sid: TagGetResources
+          Effect: Allow
+          Action:
+          - tag:GetResources
+          Resource: '*'
+        - Sid: LambdaMessengerAsyncInvoke
+          Effect: Allow
+          Action:
+          - lambda:InvokeFunction
+          - lambda:InvokeAsync
+          Resource:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+  StopFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: StopFunction
+      Handler: app.stopHandler
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          MESSENGERFUNCTION:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+      Events:
+        InfraOnOff:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ServiceApi
+            Path: /stop
+            Method: get
+            Auth:
+              Authorizer: CognitoAuthorizer
+        InfraOnOffTags:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ServiceApi
+            Path: /stop
+            Method: post
+            Auth:
+              Authorizer: CognitoAuthorizer
+      Policies:
+      - Statement:
+        - Sid: EC2StartStop
+          Effect: Allow
+          Action:
+          - ec2:StopInstances
+          Resource: arn:aws:ec2:*:*:instance/*
+        - Sid: EC2Describe
+          Effect: Allow
+          Action:
+          - ec2:DescribeInstances
+          Resource: '*'
+        - Sid: RDSStartStop
+          Effect: Allow
+          Action:
+          - rds:StopDBInstance
+          Resource: arn:aws:rds:*:*:db:*
+        - Sid: RDSDescribe
+          Effect: Allow
+          Action:
+          - rds:DescribeDBInstances
+          Resource: '*'
+        - Sid: AppStreamStartStop
+          Effect: Allow
+          Action:
+          - appstream:StopFleet
+          - appstream:DescribeFleets
+          Resource: arn:aws:appstream:*:*:fleet/*
+        - Sid: AppstreamListTags
+          Effect: Allow
+          Action:
+          - appstream:ListTagsForResource
+          Resource: '*'
+        - Sid: AutoScalingUpdate
+          Effect: Allow
+          Action:
+          - autoscaling:UpdateAutoScalingGroup
+          Resource: arn:aws:autoscaling:*:*:autoScalingGroup:*:autoScalingGroupName/*
+        - Sid: AutoScalingDescribe
+          Effect: Allow
+          Action:
+          - autoscaling:DescribeAutoScalingGroups
+          - autoscaling:DescribeTags
+          Resource: '*'
+        - Sid: TagGetResources
+          Effect: Allow
+          Action:
+          - tag:GetResources
+          Resource: '*'
+        - Sid: LambdaMessengerAsyncInvoke
+          Effect: Allow
+          Action:
+          - lambda:InvokeFunction
+          - lambda:InvokeAsync
+          Resource:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+  EnableScheduleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: EnableScheduleFunction
+      Handler: app.enableScheduleHandler
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          REGLAENCENDIDO:
+            Ref: ReglaEncendido
+          REGLAAPAGADO:
+            Ref: ReglaApagado
+          DESCRIPCIONENCENDIDO:
+            Ref: DescripcionEncendido
+          DESCRIPCIONAPAGADO:
+            Ref: DescripcionApagado
+          STARTFUNCTION:
+            Fn::GetAtt:
+            - StartFunction
+            - Arn
+          STOPFUNCTION:
+            Fn::GetAtt:
+            - StopFunction
+            - Arn
+          MESSENGERFUNCTION:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+      Events:
+        InfraOnOff:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ServiceApi
+            Path: /enable
+            Method: post
+            Auth:
+              Authorizer: CognitoAuthorizer
+      Policies:
+      - Statement:
+        - Sid: CloudWatchPutRulesEvents
+          Effect: Allow
+          Action:
+          - events:PutEvents
+          - events:PutRule
+          - events:PutTargets
+          Resource: '*'
+        - Sid: LambdaMessengerAsyncInvoke
+          Effect: Allow
+          Action:
+          - lambda:InvokeFunction
+          - lambda:InvokeAsync
+          Resource:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+  DisableScheduleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: DisableScheduleFunction
+      Handler: app.disableScheduleHandler
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          REGLAENCENDIDO:
+            Ref: ReglaEncendido
+          REGLAAPAGADO:
+            Ref: ReglaApagado
+          DESCRIPCIONENCENDIDO:
+            Ref: DescripcionEncendido
+          DESCRIPCIONAPAGADO:
+            Ref: DescripcionApagado
+          STARTFUNCTION:
+            Fn::GetAtt:
+            - StartFunction
+            - Arn
+          STOPFUNCTION:
+            Fn::GetAtt:
+            - StopFunction
+            - Arn
+          MESSENGERFUNCTION:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+      Events:
+        InfraOnOff:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ServiceApi
+            Path: /disable
+            Method: post
+            Auth:
+              Authorizer: CognitoAuthorizer
+      Policies:
+      - Statement:
+        - Sid: CloudWatchPutRulesEvents
+          Effect: Allow
+          Action:
+          - events:PutEvents
+          - events:PutRule
+          - events:PutTargets
+          Resource: '*'
+        - Sid: LambdaMessengerAsyncInvoke
+          Effect: Allow
+          Action:
+          - lambda:InvokeFunction
+          - lambda:InvokeAsync
+          Resource:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+  GetScheduleFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: GetScheduleFunction
+      Handler: app.getScheduleHandler
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          REGLAENCENDIDO:
+            Ref: ReglaEncendido
+          REGLAAPAGADO:
+            Ref: ReglaApagado
+          MESSENGERFUNCTION:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+      Events:
+        InfraOnOff:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ServiceApi
+            Path: /schedule
+            Method: get
+            Auth:
+              Authorizer: CognitoAuthorizer
+      Policies:
+      - Statement:
+        - Sid: CloudWatchListDescribeRules
+          Effect: Allow
+          Action:
+          - events:ListRules
+          - events:DescribeRule
+          Resource: '*'
+        - Sid: LambdaMessengerAsyncInvoke
+          Effect: Allow
+          Action:
+          - lambda:InvokeFunction
+          - lambda:InvokeAsync
+          Resource:
+            Fn::GetAtt:
+            - MessengerFunction
+            - Arn
+  MessengerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: MessengerFunction
+      Handler: app.messengerHandler
+      Runtime: nodejs12.x
+      Environment:
+        Variables:
+          TopicARN:
+            Ref: SNSMessengerTopic
+      Events:
+        InfraOnOff:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: ServiceApi
+            Path: /messenger
+            Method: post
+      Policies:
+      - Statement:
+        - Sid: SNSPublish
+          Effect: Allow
+          Action:
+          - sns:Publish
+          Resource:
+            Ref: SNSMessengerTopic
+  GatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Headers: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      ResponseType: EXPIRED_TOKEN
+      RestApiId:
+        Ref: ServiceApi
+      StatusCode: '401'
+  AuthFailureGatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Headers: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      ResponseType: UNAUTHORIZED
+      RestApiId:
+        Ref: ServiceApi
+      StatusCode: '401'
+  MissingTokeneGatewayResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Headers: '''*'''
+        gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      ResponseType: MISSING_AUTHENTICATION_TOKEN
+      RestApiId:
+        Ref: ServiceApi
+      StatusCode: '401'
+Parameters:
+  Empresa:
+    Description: "Nombre de la empresa donde se realizar\xC3\xA1 el despliegue"
+    Type: String
+    MinLength: 3
+  UserPoolArn:
+    Description: Variables
+    Type: String
+    Default: arn:aws:cognito-idp:us-east-1:420213966676:userpool/us-east-1_cNikgOFTa
+  UserPool:
+    Description: Variables
+    Type: String
+    Default: us-east-1_cNikgOFTa
+  UserPoolTokenClient:
+    Description: Variables
+    Type: String
+    Default: 39mmdmm7p8qbb5gra4ma483def
+  ReglaEncendido:
+    Description: Variables
+    Type: String
+    Default: ProgramadoEncendidoRule
+  ReglaApagado:
+    Description: Variables
+    Type: String
+    Default: ProgramadoApagadoRule
+  DescripcionEncendido:
+    Description: Variables
+    Type: String
+    Default: Programado de encendido para los recursos
+  DescripcionApagado:
+    Description: Variables
+    Type: String
+    Default: Programado de apagado para los recursos
+Outputs:
+  InfraOnOffApi:
+    Description: API Gateway endpoint URL for Prod stage for InfraOnOff function
+    Value:
+      Fn::Sub: https://${ServiceApi}.execute-api.${AWS::Region}.amazonaws.com/dev/

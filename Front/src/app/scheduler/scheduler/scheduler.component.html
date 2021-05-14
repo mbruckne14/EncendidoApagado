@@ -1,0 +1,45 @@
+<div class="card">
+    <h1 class="card-header">Programado de Recursos</h1>
+    <div class="card-body">
+        <h2 style="margin: 0 0 16px 0px;display: inline-block;" >Horario de encendido</h2> 
+        <ul style="display: inline-block;">
+            <!-- <li [style.color]="green">Este programado se encuenta habilitado</li> -->
+            <li style='font-weight: 500' [ngStyle]="{'color': estadoEncendido === 'ENABLED'? '#28a745' : '#dc3545'}">Este programado se encuenta {{estadoEncendido === 'ENABLED' ? 'habilitado': 'deshabilitado'}}</li>
+        </ul>
+        <form [formGroup]="form">
+            <div class="form-group">
+                <ngb-timepicker [(ngModel)]="timeEncendido" name="timeEncendido" [ngModelOptions]="{standalone: true}">
+                </ngb-timepicker>
+                <div style="display: inline-block;" *ngFor="let diaEncendido of diasEncendido">
+                    <mat-checkbox style="margin:5px" [checked]="diaEncendido.checked" [value]="diaEncendido.id"
+                        (change)="onCheckboxChange($event,'encendido')">
+                        {{diaEncendido.name}} </mat-checkbox>
+                </div>
+            </div>
+
+            <hr>
+
+            <h2 style="margin: 0 0 16px 0px;display: inline-block;">Horario de apagado</h2>
+            <ul style="display: inline-block;">
+                <li style='font-weight: 500' [ngStyle]="{'color': estadoApagado === 'ENABLED'? '#28a745' : '#dc3545'}">Este programado se encuenta {{estadoApagado === 'ENABLED' ? 'habilitado': 'deshabilitado'}}</li>
+            </ul>
+            <ngb-timepicker [(ngModel)]="timeApagado" name="timeApagado" [ngModelOptions]="{standalone: true}">
+            </ngb-timepicker>
+            <div style="display: inline-block;" *ngFor="let diaApagado of diasApagado">
+                <mat-checkbox style="margin:5px" [checked]="diaApagado.checked" [value]="diaApagado.id"
+                    (change)="onCheckboxChange($event,'apagado')">
+                    {{diaApagado.name}} </mat-checkbox>
+            </div>
+            <hr>
+
+        </form>
+        <button [disabled]="loading" style="margin:5px;width: 230px;" class="btn btn-md btn-success mb-2"
+            (click)="openDialog($event)" id="habilitar">
+            <span *ngIf="loadingHabilitar" class="spinner-border spinner-border-sm mr-1"></span>
+            Habilitar Programado</button>
+        <button [disabled]="loading" style="margin:5px;width: 230px;" class="btn btn-md btn-danger mb-2"
+            (click)="openDialog($event)" id="deshabilitar">
+            <span *ngIf="loadingDeshabilitar" class="spinner-border spinner-border-sm mr-1"></span>
+            Deshabilitar Programado</button>
+    </div>
+</div>

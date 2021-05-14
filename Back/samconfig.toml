@@ -1,0 +1,12 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "turnOnOffLogin"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-rtp457m9slas"
+s3_prefix = "turnOnOffLogin"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Empresa=\"clouxter\" UserPoolArn=\"arn:aws:cognito-idp:us-east-1:420213966676:userpool/us-east-1_cNikgOFTa\" UserPool=\"us-east-1_cNikgOFTa\" UserPoolTokenClient=\"39mmdmm7p8qbb5gra4ma483def\" ReglaEncendido=\"ProgramadoEncendidoRule\" ReglaApagado=\"ProgramadoApagadoRule\" DescripcionEncendido=\"Programado de encendido para los recursos\" DescripcionApagado=\"Programado de apagado para los recursos\""
+

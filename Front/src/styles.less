@@ -1,0 +1,26 @@
+/* You can add global styles to this file, and also import other style files */
+@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+@import '~@angular/cdk/overlay-prebuilt.css';
+a { cursor: pointer; }
+
+.app-container {
+    min-height: 320px;
+    height:calc(100% - 52px);
+    overflow: hidden;
+}
+
+.btn-delete-user {
+    width: 40px;
+    text-align: center;
+    box-sizing: content-box;
+}
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+.mat-checkbox-indeterminate.mat-accent .mat-checkbox-background, .mat-checkbox-checked.mat-accent .mat-checkbox-background {
+    background-color: #007bff;
+}
+.mat-checkbox-checked:not(.mat-checkbox-disabled).mat-accent .mat-ripple-element, .mat-checkbox:active:not(.mat-checkbox-disabled).mat-accent .mat-ripple-element {
+    background: blue;
+}
